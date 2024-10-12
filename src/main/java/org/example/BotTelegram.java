@@ -4,7 +4,6 @@ import org.bspfsystems.yamlconfiguration.configuration.InvalidConfigurationExcep
 import org.bspfsystems.yamlconfiguration.file.YamlConfiguration;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
