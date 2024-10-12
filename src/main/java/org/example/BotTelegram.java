@@ -9,10 +9,15 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BotTelegram extends TelegramLongPollingBot {
     private String token = "changeme";
     private String username = "changeme";
+    public ArrayList<String> answers = new ArrayList<>();
+    public String adminprefix = "[Администратор]";
 
     public BotTelegram() {
         System.out.println("Bot started");
@@ -55,6 +60,27 @@ public class BotTelegram extends TelegramLongPollingBot {
         if (update.getMessage().getText().toString().startsWith("/")) {
             if (update.getMessage().getText().toString().equals("/start")) {
                 sendMessage(update.getMessage().getChatId(), "[Бот] Привет! Вы попали в Тех-Поддержку! Чтобы задать ваш вопрос воспользуйтесь командой /answer");
+                YamlConfiguration users = new YamlConfiguration();
+                File file = new File("users/" + update.getMessage().getChatId() + ".yml");
+                try {
+                    users.load(file);
+                    users.set("answers", answers);
+                    users.set("chatid", update.getMessage().getChatId());
+                    users.set("firstname", update.getMessage().getChat().getFirstName());
+                    users.set("lastname", update.getMessage().getChat().getLastName());
+                    users.set("admin", false);
+                    users.set("root", false);
+                    users.set("adminprefix", adminprefix);
+                } catch (IOException e) {
+                    System.out.println("Error loading config file: " + e);
+                } catch (InvalidConfigurationException e) {
+                    System.out.println("Error loading config file: " + e);
+                }
+                try {
+                    users.save(file);
+                } catch (IOException e) {
+                    System.out.println("Error saving config file: " + e);
+                }
             }
             if (update.getMessage().getText().equals("/answer")) {
                 sendMessage(update.getMessage().getChatId(), "[Бот] Пожалуйста, введите ваш вопрос");
@@ -62,11 +88,9 @@ public class BotTelegram extends TelegramLongPollingBot {
                 if (update.getMessage().getText().startsWith("/answer ")) {
                     String text = update.getMessage().getText().substring(8);
                     sendMessage(update.getMessage().getChatId(), "[Бот] Вы успешно задали вопрос: " + text);
-                    System.out.println("Получен текст: " + text);
+                    answers.add(text);
+                    System.out.println(answers);
                 }
-            }
-            if (update.getMessage().getText().toString().startsWith("/help")) {
-                sendMessage(update.getMessage().getChatId(), "[Бот] Список команд: \n /answer {вопрос} - Задать вопрос \n ");
             }
         }
     }
@@ -80,7 +104,5 @@ public class BotTelegram extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             System.out.println("Error sending message: " + e);
         }
-
-
     }
 }
