@@ -55,7 +55,7 @@ public class BotTelegram extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.getMessage().getText().toString().startsWith("/")) {
             if (update.getMessage().getText().toString().equals("/start")) {
-                sendMessage(update.getMessage().getChatId(), "[Бот] Привет! Вы попали в Тех-Поддержку Бота CS2SHOP! Чтобы задать ваш вопрос воспользуйтесь командой /answer");
+                sendMessage(update.getMessage().getChatId(), "[Бот] Привет! Вы попали в Тех-Поддержку! Чтобы задать ваш вопрос воспользуйтесь командой /answer");
             }
             if (update.getMessage().getText().equals("/answer")) {
                 sendMessage(update.getMessage().getChatId(), "[Бот] Пожалуйста, введите ваш вопрос");
