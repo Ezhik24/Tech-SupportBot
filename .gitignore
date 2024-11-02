@@ -12,6 +12,8 @@ target/
 *.iml
 *.ipr
 .idea/
+pom.xml
+.gitignore
 
 ### Eclipse ###
 .apt_generated
