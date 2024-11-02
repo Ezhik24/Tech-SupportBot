@@ -15,10 +15,10 @@ import java.util.ArrayList;
 public class BotTelegram extends TelegramLongPollingBot {
     private String token = "changeme";
     private String username = "changeme";
-    private ArrayList<String> answers = new ArrayList<>();
+    public ArrayList<String> answers = new ArrayList<>();
     private String adminprefix;
 
-    public BotTelegram(Update update) {
+    public BotTelegram() {
         System.out.println("Bot started");
         YamlConfiguration config = new YamlConfiguration();
         File file = new File("config.yml");
@@ -56,42 +56,42 @@ public class BotTelegram extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        YamlConfiguration users = new YamlConfiguration();
-        File file = new File("users/" + update.getMessage().getChatId() + ".yml");
-        if (!file.exists()) {
-            try {
-                users.load(file);
-                users.set("chatid", update.getMessage().getChatId());
-                users.set("firstname", update.getMessage().getChat().getFirstName());
-                users.set("lastname", update.getMessage().getChat().getLastName());
-                users.set("username", update.getMessage().getChat().getUserName());
-                users.set("admin", false);
-                users.set("root", false);
-                users.set("adminprefix", adminprefix);
-                users.set("answers", answers);
-            } catch (NoSuchFileException e) {
-                users.set("chatid", update.getMessage().getChatId());
-                users.set("firstname", update.getMessage().getChat().getFirstName());
-                users.set("lastname", update.getMessage().getChat().getLastName());
-                users.set("username", update.getMessage().getChat().getUserName());
-                users.set("admin", false);
-                users.set("root", false);
-                users.set("adminprefix", adminprefix);
-                users.set("answers", answers);
-            } catch (IOException e) {
-                System.out.println("Error loading config file: " + e);
-            } catch (InvalidConfigurationException e) {
-                System.out.println("Error loading config file: " + e);
-            }
-            try {
-                users.save(file);
-            } catch (IOException e) {
-                System.out.println("Error saving config file: " + e);
-            }
-        }
         if (update.getMessage().getText().toString().startsWith("/")) {
             if (update.getMessage().getText().toString().equals("/start")) {
                 sendMessage(update.getMessage().getChatId(), "[Бот] Привет! Вы попали в Тех-Поддержку! Чтобы задать ваш вопрос воспользуйтесь командой /answer");
+                YamlConfiguration users = new YamlConfiguration();
+                File file = new File("users/" + update.getMessage().getChatId() + ".yml");
+                if (!file.exists()) {
+                    try {
+                        users.load(file);
+                        users.set("chatid", update.getMessage().getChatId());
+                        users.set("firstname", update.getMessage().getChat().getFirstName());
+                        users.set("lastname", update.getMessage().getChat().getLastName());
+                        users.set("username", update.getMessage().getChat().getUserName());
+                        users.set("admin", false);
+                        users.set("root", false);
+                        users.set("adminprefix", adminprefix);
+                        users.set("answers", answers);
+                    } catch (NoSuchFileException e) {
+                        users.set("chatid", update.getMessage().getChatId());
+                        users.set("firstname", update.getMessage().getChat().getFirstName());
+                        users.set("lastname", update.getMessage().getChat().getLastName());
+                        users.set("username", update.getMessage().getChat().getUserName());
+                        users.set("admin", false);
+                        users.set("root", false);
+                        users.set("adminprefix", adminprefix);
+                        users.set("answers", answers);
+                    } catch (IOException e) {
+                        System.out.println("Error loading config file: " + e);
+                    } catch (InvalidConfigurationException e) {
+                        System.out.println("Error loading config file: " + e);
+                    }
+                    try {
+                        users.save(file);
+                    } catch (IOException e) {
+                        System.out.println("Error saving config file: " + e);
+                    }
+                }
             }
             if (update.getMessage().getText().equals("/answer")) {
                 sendMessage(update.getMessage().getChatId(), "[Бот] Пожалуйста, введите ваш вопрос");
@@ -104,15 +104,26 @@ public class BotTelegram extends TelegramLongPollingBot {
                     setAnswers(update);
                 }
             }
-            if (update.getMessage().getText().equals("/admin")) {
+            if (update.getMessage().getText().equals("/setadmin")) {
                 sendMessage(update.getMessage().getChatId(), "[root] Пожалуйста, введите ID пользователя");
             } else {
-                if (update.getMessage().getText().startsWith("/admin " + update.getMessage().getText().substring(7))) {
+                if (update.getMessage().getText().startsWith("/setadmin " + update.getMessage().getText().substring(10))) {
                      if (isRoot(update).equals(true)) {
                          setAdmin(update);
                      } else {
                          sendMessage(update.getMessage().getChatId(), "[root] Вы не являетесь администратором!");
                      }
+                }
+            }
+            if (update.getMessage().getText().equals("/remadmin")) {
+                sendMessage(update.getMessage().getChatId(), "[root] Пожалуйста, введите ID пользователя");
+            } else {
+                if (update.getMessage().getText().startsWith("/remadmin " + update.getMessage().getText().substring(10))) {
+                    if (isRoot(update).equals(true)) {
+                        remAdmin(update);
+                    } else {
+                        sendMessage(update.getMessage().getChatId(), "[root] Вы не являетесь администратором!");
+                    }
                 }
             }
         }
@@ -131,7 +142,8 @@ public class BotTelegram extends TelegramLongPollingBot {
 
     public void setAnswers(Update update) {
         YamlConfiguration answersconf = new YamlConfiguration();
-        File answersfile = new File( "users/" + update.getMessage().getChatId() + ".yml");
+        Long user = update.getMessage().getChatId();
+        File answersfile = new File( "users/" + user + ".yml");
         try {
             answersconf.load(answersfile);
             answersconf.set("answers", this.answers);
@@ -140,8 +152,6 @@ public class BotTelegram extends TelegramLongPollingBot {
         } catch (InvalidConfigurationException e) {
             System.out.println("Error loading config file: " + e);
         }
-        System.out.println("BotTelegram.setAnswers: " + answersconf.getStringList("answers"));
-        System.out.println(answersconf.get("answers"));
     }
 
     public ArrayList<String> getAnswers() {
@@ -155,8 +165,8 @@ public class BotTelegram extends TelegramLongPollingBot {
             users.load(file);
             users.set("admin", true);
             long user = Long.parseLong(update.getMessage().getText().substring(7));
-            sendMessage(update.getMessage().getChatId(), "[root] Вы успешно сделали данного пользователя администратором");
-            sendMessage(user, "[Admin] Вы стали администратором");
+            sendMessage(update.getMessage().getChatId(), "[root] Вы успешно сделали данного пользователя Администратором");
+            sendMessage(user, "[Admin] Вы стали Администратором");
         } catch (IOException e) {
             System.out.println("Error loading config file: " + e);
         } catch (InvalidConfigurationException e) {
@@ -168,6 +178,27 @@ public class BotTelegram extends TelegramLongPollingBot {
             System.out.println("Error saving config file: " + e);
         }
     }
+    public void remAdmin(Update update) {
+        YamlConfiguration users = new YamlConfiguration();
+        File file = new File("users/" + update.getMessage().getText().substring(7) + ".yml");
+        try {
+            users.load(file);
+            users.set("admin", false);
+            long user = Long.parseLong(update.getMessage().getText().substring(7));
+            sendMessage(update.getMessage().getChatId(), "[root] Вы успешно сняли данного пользователя с Администраторки");
+            sendMessage(user, "[Admin] Вас сняли с Администраторки");
+        } catch (IOException e) {
+            System.out.println("Error loading config file: " + e);
+        } catch (InvalidConfigurationException e) {
+            System.out.println("Error loading config file: " + e);
+        }
+        try {
+            users.save(file);
+        } catch (IOException e) {
+            System.out.println("Error saving config file: " + e);
+        }
+    }
+
     public Boolean isRoot(Update update) {
         YamlConfiguration users = new YamlConfiguration();
         File file = new File("users/" + update.getMessage().getChatId() + ".yml");

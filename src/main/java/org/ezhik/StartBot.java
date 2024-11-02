@@ -7,7 +7,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 public class StartBot{
     public static void main(String[] args) {
-        BotTelegram bot = new BotTelegram(new Update());
+        BotTelegram bot = new BotTelegram();
         if (bot.getBotToken() == "changeme" && bot.getBotUsername() == "changeme") {
             System.out.println("Please, provide token and username in config.yml file");
         } else {
